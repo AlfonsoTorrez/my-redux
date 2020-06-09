@@ -2,16 +2,18 @@
 <html>
 <head>
   <title>Udacity Todos Goals</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js"></script>
-  <script src="https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-  <script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
-  <script src="https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js'></script>
+  <script src='https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js'></script>
+  <script src='https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js'></script>
+  <script src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js'></script>
+  <script src='https://tylermcginnis.com/goals-todos-api/index.js'></script>
+  <script src='https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js'></script>
+  <script src='https://unpkg.com/react-redux@5.0.6/dist/react-redux.min.js'></script>
 </head>
 <body>
   <div id='app'></div>
-  <script type="text/javascript">
+
+  <script type='text/javascript'>
     function generateId () {
       return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
     }
@@ -60,22 +62,10 @@
     }
 
     function receiveDataAction (todos, goals) {
-      return{
+      return {
         type: RECEIVE_DATA,
         todos,
         goals,
-      }
-    }
-
-    function handleDeleteTodo (todo) {
-      return (dispatch) => {
-        dispatch(removeTodoAction(todo.id))
-
-        return API.deleteTodo(todo.id)
-          .catch(() => {
-            this.props.store.dispatch(addTodoAction(todo))
-            alert('An error occurred. Try again.')
-          })
       }
     }
 
@@ -86,18 +76,32 @@
             dispatch(addTodoAction(todo))
             cb()
           })
-          .catch(() => alert('There was an error. Try again.'))
+          .catch(() => {
+            alert('There was an error. Try again.')
+          })
       }
     }
 
-    function handleToggle (id){
+    function handleDeleteTodo (todo) {
+      return (dispatch) => {
+        dispatch(removeTodoAction(todo.id))
+
+        return API.deleteTodo(todo.id)
+          .catch(() => {
+            dispatch(addTodoAction(todo))
+            alert('An error occurred. Try again.')
+          })
+      }
+    }
+
+    function handleToggle (id) {
       return (dispatch) => {
         dispatch(toggleTodoAction(id))
 
         return API.saveTodoToggle(id)
           .catch(() => {
             dispatch(toggleTodoAction(id))
-            alert('An error occured. Try again.')
+            alert('An error occurred. Try again.')
           })
       }
     }
@@ -119,23 +123,22 @@
 
         return API.deleteGoal(goal.id)
           .catch(() => {
-            this.props.store.dispatch(addGoalAction(goal))
+            dispatch(addGoalAction(goal))
             alert('An error occurred. Try again.')
           })
       }
     }
 
     function handleInitialData () {
-      return (dispatch) =>{
-        Promise.all([
+      return (dispatch) => {
+        return Promise.all([
           API.fetchTodos(),
           API.fetchGoals()
         ]).then(([ todos, goals ]) => {
-          store.dispatch(receiveDataAction(todos,goals))
+          dispatch(receiveDataAction(todos, goals))
         })
       }
     }
-
 
     function todos (state = [], action) {
       switch(action.type) {
@@ -166,9 +169,9 @@
       }
     }
 
-    function loading (state = true, action){
-      switch(action.type){
-        case RECEIVE_DATA:
+    function loading (state = true, action) {
+      switch(action.type) {
+        case RECEIVE_DATA :
           return false
         default :
           return state
@@ -195,7 +198,7 @@
 
     const logger = (store) => (next) => (action) => {
       console.group(action.type)
-        console.log('The action: ',action)
+        console.log('The action: ', action)
         const result = next(action)
         console.log('The new state: ', store.getState())
       console.groupEnd()
@@ -207,12 +210,10 @@
       goals,
       loading,
     }), Redux.applyMiddleware(ReduxThunk.default, checker, logger))
-
   </script>
 
   <script type='text/babel'>
-
-    function List (props){
+    function List (props) {
       return (
         <ul>
           {props.items.map((item) => (
@@ -246,8 +247,8 @@
       toggleItem = (id) => {
         this.props.dispatch(handleToggle(id))
       }
-      render(){
-        return(
+      render() {
+        return (
           <div>
             <h1>Todo List</h1>
             <input
@@ -267,7 +268,7 @@
       }
     }
 
-    const ConnectedTodos = connect((state) => ({
+    const ConnectedTodos = ReactRedux.connect((state) => ({
       todos: state.todos
     }))(Todos)
 
@@ -282,8 +283,8 @@
       removeItem = (goal) => {
         this.props.dispatch(handleDeleteGoal(goal))
       }
-      render(){
-        return(
+      render() {
+        return (
           <div>
             <h1>Goals</h1>
             <input
@@ -302,7 +303,7 @@
       }
     }
 
-    const ConnectedGoals = connect((state) => ({
+    const ConnectedGoals = ReactRedux.connect((state) => ({
       goals: state.goals
     }))(Goals)
 
@@ -313,9 +314,8 @@
         dispatch(handleInitialData())
       }
       render() {
-
         if (this.props.loading === true) {
-          return <h3>Loading...</h3>
+          return <h3>Loading</h3>
         }
 
         return (
@@ -327,65 +327,16 @@
       }
     }
 
-    const ConnectedApp = connect((state) => ({
+    const ConnectedApp = ReactRedux.connect((state) => ({
       loading: state.loading
     }))(App)
 
-    const Context = React.createContext()
-
-    function connect (mapStateToProps) {
-      return (Component) => {
-        class Receiver extends React.Component {
-          componentDidMount() {
-            const { subscribe } = this.props.store
-
-            this.unsubscribe = subscribe(() => {
-              this.forceUpdate()
-            })
-          }
-          componentWillUnmount () {
-            this.unsubscribe
-          }
-          render() {
-            const { dispatch, getState } = this.props.store
-            const state = getState()
-            const stateNeeded = mapStateToProps(state)
-
-            return <Component {...stateNeeded} dispatch={dispatch}/>
-          }
-        }
-
-        class ConnectedComponent extends React.Component {
-          render() {
-            return (
-              <Context.Consumer>
-                {(store) => <Receiver store={store}/>}
-              </Context.Consumer>
-            )
-          }
-        }
-
-        return ConnectedComponent
-      }
-    }
-
-    class Provider extends React.Component {
-      render () {
-        return (
-          <Context.Provider value={this.props.store}>
-            {this.props.children}
-          </Context.Provider>
-        )
-      }
-    }
-
     ReactDOM.render(
-      <Provider store={store}>
+      <ReactRedux.Provider store={store}>
         <ConnectedApp />
-      </Provider>,
+      </ReactRedux.Provider>,
       document.getElementById('app')
     )
-
   </script>
 </body>
 </html>
